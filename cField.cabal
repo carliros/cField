@@ -1,0 +1,24 @@
+cabal-version: >= 1.8
+build-type: Custom
+x-bootstrap-build-type: Simple
+name: cField
+version: 0.1
+maintainer: Carlos Gomez <carliros.g@gmail.com>
+synopsis: calculates widths and x coords for a list of fields
+description: calculates widths and x coords for a list of fields
+category: Development
+stability: Experiment
+author: Carlos Gomez
+extra-source-files: uuagc_options
+extra-source-files: ag/DataSemFuns.ag
+
+executable cField
+   build-depends: base >= 4, base < 5
+   build-depends: uuagc-cabal >= 1.0.2.0
+   build-depends: uu-parsinglib >= 2.7.3.2
+   
+   main-is: Main.hs
+   hs-source-dirs: src, ag
+   x-bootstrap-hs-source-dirs: src, src-generated
+   extensions: TypeSynonymInstances, MultiParamTypeClasses
+

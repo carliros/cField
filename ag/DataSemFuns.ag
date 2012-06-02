@@ -1,0 +1,71 @@
+imports{
+{-# LANGUAGE FlexibleContexts #-}
+module DataSemFuns where
+import Text.ParserCombinators.UU
+import Text.ParserCombinators.UU.Derived
+import Text.ParserCombinators.UU.Utils
+import Text.ParserCombinators.UU.BasicInstances
+}
+
+DATA Root
+    | Root items: Items
+		   total: Int
+
+DATA Field
+    | Field width: Int
+            xPos: Int
+
+DATA Item
+    | Item value: Int
+
+TYPE Items = [Item]
+
+-- downloading the total til item
+ATTR Items Item [ total: Int ||]
+SEM Root
+	| Root items.total = @total
+
+-- calculando el width
+ATTR Item [|| width: Int]
+SEM Item
+    | Item loc.width = (@value * @lhs.total) `div` 100
+           lhs.width = @loc.width
+
+ATTR Items Item [ xPos: Int ||]
+SEM Items
+    | Cons hd.xPos  = @lhs.xPos
+           tl.xPos  = @hd.width + @lhs.xPos
+SEM Root
+    | Root items.xPos = 0
+
+ATTR Root Items [|| items USE {:} {[]} : {[Field]}]
+ATTR Item [|| items : Field]
+SEM Item
+    | Item lhs.items = Field @loc.width @lhs.xPos
+
+-- auxiliar funcions
+{
+totalWidth :: Int
+--totalWidth = 752
+totalWidth = 572
+
+toItems :: String -> ([Item], Int)
+toItems input = let (items, total) = runParser "Command Parameters" pArguments input
+		        in case total of
+				      Nothing  -> (items, totalWidth)
+				      Just val -> (items, val)
+    where pItem :: Parser Item
+          pItem = Item <$> pNatural
+          pArguments :: Parser ([Item], Maybe Int)
+          pArguments = (,) <$> listParser pItem <*> pMaybe pNatural
+
+calculate :: String -> [Field]
+calculate input = let (items, total) = toItems input
+                  in sem_Root (Root items total)
+
+instance Show Field where
+    show (Field w x) = "width\t: " ++ show w ++ "\n" ++ "xPos\t: " ++ show x ++ "\n"
+
+}
+
+
